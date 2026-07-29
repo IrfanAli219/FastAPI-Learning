@@ -19,7 +19,9 @@ class StudentUpdate(BaseModel):
     cgpa : float = Field(ge=0,le=4)
 
 
-@router.post("/",status_code=201)
+@router.post("/",status_code=201,summary="Create a new student",deprecated=True,responses={
+    409:{"description" : "Student with this ID already exists"}
+})
 def create_student(new_student:Student):
 
     #Duplicate check
@@ -45,7 +47,12 @@ def create_student(new_student:Student):
 def get_students():
     return students
 
-@router.get("/{id}")
+@router.get("/{id}",responses={
+    404:{
+        "description":"Student not fount"
+        }
+}
+)
 def get_student(id:int):
     for student in students:
         if student["id"]==id:
@@ -57,7 +64,9 @@ def get_student(id:int):
     )
 
 #Just a practice
-@router.put("/{id}")
+@router.put("/{id}",responses={
+    404:{"description":"Student not found"}
+})
 def update_student(id : int, updated_student:StudentUpdate):
     for student in students:
         if student["id"]==id:
@@ -76,7 +85,11 @@ def update_student(id : int, updated_student:StudentUpdate):
     )
 
 
-@router.delete("/{id}")
+@router.delete("/{id}",responses={
+    404 : {
+        "message":"Student deleted successfully"
+    }
+})
 def delete_student(id : int):
     for student in students:
         if id == student["id"]:
