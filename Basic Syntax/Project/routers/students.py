@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/students",tags=["Students"])
@@ -7,6 +7,7 @@ students = [
     {"id": 1, "name": "Ali", "cgpa": 3.5},
     {"id": 2, "name": "Ahmed", "cgpa": 3.8}
 ]
+
 
 class Student(BaseModel):
     id : int  = Field(gt=0,description="Enter Student ID")
@@ -18,11 +19,13 @@ class StudentUpdate(BaseModel):
     name : str = Field(min_length=3)
     cgpa : float = Field(ge=0,le=4)
 
+def check_login():
+    print("Checking login....")
 
 @router.post("/",status_code=201,summary="Create a new student",deprecated=True,responses={
     409:{"description" : "Student with this ID already exists"}
 })
-def create_student(new_student:Student):
+def create_student(new_student:Student, user = Depends(check_login)):
 
     #Duplicate check
     for student in students:
@@ -44,16 +47,16 @@ def create_student(new_student:Student):
             }
 
 @router.get("/")
-def get_students():
+def get_students(user=Depends(check_login)):
     return students
 
 @router.get("/{id}",responses={
     404:{
-        "description":"Student not fount"
+        "description":"Student not found"
         }
 }
 )
-def get_student(id:int):
+def get_student(id:int,user=Depends(check_login)):
     for student in students:
         if student["id"]==id:
             return student
@@ -67,7 +70,7 @@ def get_student(id:int):
 @router.put("/{id}",responses={
     404:{"description":"Student not found"}
 })
-def update_student(id : int, updated_student:StudentUpdate):
+def update_student(id : int, updated_student:StudentUpdate,user=Depends(check_login)):
     for student in students:
         if student["id"]==id:
             student["name"]=updated_student.name
@@ -90,7 +93,7 @@ def update_student(id : int, updated_student:StudentUpdate):
         "message":"Student deleted successfully"
     }
 })
-def delete_student(id : int):
+def delete_student(id : int, user=Depends(check_login)):
     for student in students:
         if id == student["id"]:
             students.remove(student)
