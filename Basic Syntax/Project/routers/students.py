@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
-router = APIRouter(prefix="/students",tags=["Students"])
+def check_login():
+    print("Checking login....")
+    return "Ali"
+
+router = APIRouter(prefix="/students",tags=["Students"],dependencies=Depends(check_login))
 
 students = [
     {"id": 1, "name": "Ali", "cgpa": 3.5},
@@ -21,11 +25,12 @@ class StudentUpdate(BaseModel):
 
 def check_login():
     print("Checking login....")
+    return "Ali"
 
 @router.post("/",status_code=201,summary="Create a new student",deprecated=True,responses={
     409:{"description" : "Student with this ID already exists"}
 })
-def create_student(new_student:Student, user = Depends(check_login)):
+def create_student(new_student:Student):
 
     #Duplicate check
     for student in students:
@@ -47,7 +52,7 @@ def create_student(new_student:Student, user = Depends(check_login)):
             }
 
 @router.get("/")
-def get_students(user=Depends(check_login)):
+def get_students():
     return students
 
 @router.get("/{id}",responses={
@@ -56,7 +61,7 @@ def get_students(user=Depends(check_login)):
         }
 }
 )
-def get_student(id:int,user=Depends(check_login)):
+def get_student(id:int):
     for student in students:
         if student["id"]==id:
             return student
@@ -70,7 +75,7 @@ def get_student(id:int,user=Depends(check_login)):
 @router.put("/{id}",responses={
     404:{"description":"Student not found"}
 })
-def update_student(id : int, updated_student:StudentUpdate,user=Depends(check_login)):
+def update_student(id : int, updated_student:StudentUpdate):
     for student in students:
         if student["id"]==id:
             student["name"]=updated_student.name
@@ -90,15 +95,15 @@ def update_student(id : int, updated_student:StudentUpdate,user=Depends(check_lo
 
 @router.delete("/{id}",responses={
     404 : {
-        "message":"Student deleted successfully"
+        "message":"Student not found"
     }
 })
-def delete_student(id : int, user=Depends(check_login)):
+def delete_student(id : int):
     for student in students:
         if id == student["id"]:
             students.remove(student)
             return {
-                "message" : "Student deleted successfully"
+                "description" : "Student deleted successfully"
             }
     raise HTTPException(
         status_code=404,
