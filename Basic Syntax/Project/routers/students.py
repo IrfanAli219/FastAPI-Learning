@@ -23,16 +23,16 @@ def check_login():
 
 
 # Nested Dependency
-def check_admin(user=Depends(check_login)):
+def check_admin(login=Depends(check_login)):
     print("Checking admin...")
 
-    if user["role"] != "admin":
+    if login["role"] != "admin":
         raise HTTPException(
             status_code=403,
             detail="Access denied"
         )
 
-    return user
+    return login
 
 class Student(BaseModel):
     id: int = Field(gt=0, description="Enter Student ID")
