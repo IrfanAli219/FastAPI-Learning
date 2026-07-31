@@ -1,25 +1,16 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
-# ----------------------------
-# Router
-# ----------------------------
 router = APIRouter(
     prefix="/students",
     tags=["Students"]
 )
 
-# ----------------------------
-# Fake Database
-# ----------------------------
 students = [
     {"id": 1, "name": "Ali", "cgpa": 3.5},
     {"id": 2, "name": "Ahmed", "cgpa": 3.8}
 ]
 
-# ----------------------------
-# Dependencies
-# ----------------------------
 
 # First Dependency
 def check_login():
@@ -43,11 +34,6 @@ def check_admin(user=Depends(check_login)):
 
     return user
 
-
-# ----------------------------
-# Pydantic Models
-# ----------------------------
-
 class Student(BaseModel):
     id: int = Field(gt=0, description="Enter Student ID")
     name: str = Field(min_length=3, description="Enter Student Name")
@@ -57,11 +43,6 @@ class Student(BaseModel):
 class StudentUpdate(BaseModel):
     name: str = Field(min_length=3)
     cgpa: float = Field(ge=0, le=4)
-
-
-# ----------------------------
-# Create Student
-# ----------------------------
 
 @router.post(
     "/",
@@ -95,21 +76,11 @@ def create_student(
         "student": student_data
     }
 
-
-# ----------------------------
-# Get All Students
-# ----------------------------
-
 @router.get("/")
 def get_students(
     user=Depends(check_login)
 ):
     return students
-
-
-# ----------------------------
-# Get Student By ID
-# ----------------------------
 
 @router.get(
     "/{id}",
@@ -131,11 +102,6 @@ def get_student(
         status_code=404,
         detail="Student not found"
     )
-
-
-# ----------------------------
-# Update Student
-# ----------------------------
 
 @router.put(
     "/{id}",
@@ -165,11 +131,6 @@ def update_student(
         detail="Student not found"
     )
 
-
-# ----------------------------
-# Delete Student
-# ----------------------------
-
 @router.delete(
     "/{id}",
     responses={
@@ -183,7 +144,7 @@ def update_student(
 )
 def delete_student(
     id: int,
-    user=Depends(check_admin)      # Nested Dependency
+    user=Depends(check_admin)
 ):
     for student in students:
         if student["id"] == id:
